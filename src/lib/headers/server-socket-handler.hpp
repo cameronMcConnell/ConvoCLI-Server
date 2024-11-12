@@ -7,18 +7,19 @@
 #include <thread>
 #include <mutex>
 
-using set = std::unordered_set<int>;
-
 class ServerSocketHandler {
-    private:
-        int serverSocket;
-        sockaddr_in serverAddress;
-        set clients;
-
-        void acceptClients();
-
     public:
         ServerSocketHandler(int portNumber);
         void start();
         void stop();
+    
+    private:
+        void acceptClients();
+        void propogateMessage(int sendingClientSocket, char* message);
+
+        int serverSocket;
+        sockaddr_in serverAddress;
+        bool serverIsActive;
+        std::unordered_set<int> clients;
+        std::mutex clientMutex;
 };
