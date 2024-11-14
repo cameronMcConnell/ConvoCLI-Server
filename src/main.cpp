@@ -1,13 +1,13 @@
 //#########################################################################
 
-#include "lib/headers/server-socket-handler.hpp"
+#include "lib/headers/server.hpp"
 #include <string>
 #include <csignal>
 
 int parsePortNumber(int argc, char* argv[]);
 void handleExit(int signal);
 
-ServerSocketHandler* server;
+Server* server;
 
 //#########################################################################
 
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
     std::signal(SIGINT, handleExit);
     
-    server = new ServerSocketHandler(portNumber);
+    server = new Server(portNumber);
 
     server->start();
 

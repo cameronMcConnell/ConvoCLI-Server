@@ -1,6 +1,6 @@
-#include "headers/server-socket-handler.hpp"
+#include "headers/server.hpp"
 
-ServerSocketHandler::ServerSocketHandler(int portNumber) {
+Server::Server(int portNumber) {
     if ((this->serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         // Throw error here.
     }
@@ -25,8 +25,8 @@ ServerSocketHandler::ServerSocketHandler(int portNumber) {
     std::cout << "Server listening on port " << portNumber << "." << std::endl;
 }
 
-void ServerSocketHandler::start() {
-    std::thread acceptClientsThread(&ServerSocketHandler::acceptClients, this);
+void Server::start() {
+    std::thread handleAcceptingClientsThread(&Server::handleAcceptingClients, this);
 
     while (this->serverIsActive) {
         char buffer[1024];
@@ -37,7 +37,7 @@ void ServerSocketHandler::start() {
             ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
 
             if (bytesRead > 0) {
-                ServerSocketHandler::propogateMessage(clientSocket, buffer);
+                Server::propogateMessage(clientSocket, buffer);
             }
             else if (bytesRead == 0 || (bytesRead == -1 && errno != EAGAIN)) {
                 close(clientSocket);
@@ -47,16 +47,18 @@ void ServerSocketHandler::start() {
         }
     }
 
-    if (acceptClientsThread.joinable()) {
-        acceptClientsThread.join();
+    if (handleAcceptingClientsThread.joinable()) {
+        handleAcceptingClientsThread.join();
     }
 }
 
-void ServerSocketHandler::stop() {
+void Server::stop() {
     this->serverIsActive = false;
+
+    close(this->serverSocket);
 }
 
-void ServerSocketHandler::acceptClients() {
+void Server::handleAcceptingClients() {
     while (this->serverIsActive) {
         int clientSocket;
         
@@ -73,7 +75,7 @@ void ServerSocketHandler::acceptClients() {
     }
 }
 
-void ServerSocketHandler::propogateMessage(int sendingClientSocket, char* message) {
+void Server::propogateMessage(int sendingClientSocket, char* message) {
     for (int clientSocket : this->clients) {
         if (clientSocket != sendingClientSocket) {
             ssize_t bytesSent = send(clientSocket, message, sizeof(message), 0);

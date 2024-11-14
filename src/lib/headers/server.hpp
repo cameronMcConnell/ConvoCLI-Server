@@ -7,14 +7,14 @@
 #include <thread>
 #include <mutex>
 
-class ServerSocketHandler {
+class Server {
     public:
-        ServerSocketHandler(int portNumber);
+        Server(int portNumber);
         void start();
         void stop();
     
     private:
-        void acceptClients();
+        void handleAcceptingClients();
         void propogateMessage(int sendingClientSocket, char* message);
 
         int serverSocket;
